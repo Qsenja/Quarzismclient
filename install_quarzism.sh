@@ -71,8 +71,10 @@ download_scripts() {
 }
 
 create_desktop_entry() {
-    local icon_path="$(pwd)/$SCRIPTS_DIR/icon.png"
-    local exec_path="$(pwd)/$VENV_DIR/bin/python $(pwd)/$SCRIPTS_DIR/gui.py"
+    local base_path="$(realpath "$INSTALL_DIR")"
+    local scripts_path="$base_path/scripts"
+    local exec_path="$base_path/clientvenv/bin/python gui.py"
+    local icon_path="$scripts_path/icon.png"
     
     mkdir -p "$HOME/.local/share/applications"
     
@@ -81,8 +83,8 @@ create_desktop_entry() {
 Version=1.0
 Type=Application
 Name=Quarzism Client
-Comment=Minecraft Client for a Lightweight Experience
-Exec=sh -c "cd '$(pwd)' && $exec_path"
+Comment=Minecraft client with Quarzism modifications
+Exec=sh -c "cd '$scripts_path' && $exec_path"
 Icon=$icon_path
 Categories=Game;
 Terminal=false
@@ -96,7 +98,7 @@ EOF
     chmod +x "$DESKTOP_FILE"
 }
 
-download_uninstaller() {
+create_uninstaller() {
     download_file "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/uninstaller.sh" "$UNINSTALLER"
     chmod +x "$UNINSTALLER"
 }
@@ -107,7 +109,7 @@ main() {
     setup_virtualenv
     download_scripts
     create_desktop_entry
-    download_uninstaller
+    create_uninstaller
     echo "Installation completed successfully!"
 }
 
