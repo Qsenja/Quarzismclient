@@ -1,15 +1,3 @@
-# Check for updates first
-import os
-import sys
-from pathlib import Path
-
-base_dir = Path(__file__).parent
-updater_path = base_dir / "updater.py"
-
-if updater_path.exists():
-    os.system(f"{sys.executable} {updater_path}")
-    sys.exit(0)
-
 import json, os, sys, threading, time
 from pathlib import Path
 import requests
