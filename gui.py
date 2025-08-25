@@ -1,8 +1,6 @@
-# gui.py – 800×600 launcher
 import json, os, sys, threading, time
 from pathlib import Path
 import requests
-
 import minecraft_launcher_lib
 from PySide6.QtCore import Qt, QRegularExpression, QTimer
 from PySide6.QtGui import QFont, QRegularExpressionValidator, QPalette, QColor, QIcon
@@ -41,8 +39,6 @@ class QuarzismClientGUI(QWidget):
         self.available_versions = []
         self._build_ui()
         self._load_versions()
-        
-        # Automatically import Minecraft settings in the background
         threading.Thread(target=self._import_settings, daemon=True).start()
 
     def _build_ui(self):
@@ -63,6 +59,8 @@ class QuarzismClientGUI(QWidget):
 
         self.version_combo = QComboBox()
         self.version_combo.setFont(QFont("Segoe UI", 11))
+        self.version_combo.setMaxVisibleItems(5)
+        self.version_combo.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         form.addRow("Version:", self.version_combo)
 
         self.username_edit = QLineEdit(self.settings["username"])
@@ -75,7 +73,6 @@ class QuarzismClientGUI(QWidget):
         form.addRow("RAM (MB):", self.ram_edit)
         vbox.addWidget(group)
 
-        # Progress bar for installation
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
         vbox.addWidget(self.progress_bar)
@@ -107,14 +104,11 @@ class QuarzismClientGUI(QWidget):
         self.btn.clicked.connect(self._launch_button)
 
     def _load_versions(self):
-        """Load available Minecraft versions"""
         try:
             self.available_versions = self.launcher.get_available_versions()
             self.version_combo.clear()
-            for version in self.available_versions[:10]:  # Show only the first 10 versions
+            for version in self.available_versions:
                 self.version_combo.addItem(version)
-            
-            # Try to select the latest release
             try:
                 latest = minecraft_launcher_lib.utils.get_latest_version()["release"]
                 index = self.version_combo.findText(latest)
@@ -126,46 +120,20 @@ class QuarzismClientGUI(QWidget):
             print(f"Error loading versions: {e}")
 
     def _import_settings(self):
-        """Automatically import Minecraft settings from remote options.txt"""
         try:
             OPTIONS_URL = "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/options.txt"
             response = requests.get(OPTIONS_URL, timeout=10)
             response.raise_for_status()
-            
             options_path = Path(self.launcher.minecraft_dir) / "options.txt"
-            
-            # Create backup if file already exists
-            if options_path.exists():
-                backup_path = Path(self.launcher.minecraft_dir) / "options.txt.backup"
-                with open(options_path, 'rb') as src, open(backup_path, 'wb') as dst:
-                    dst.write(src.read())
-            
             with open(options_path, 'wb') as f:
                 f.write(response.content)
-            
             print("Minecraft settings imported successfully")
-        except requests.exceptions.RequestException as e:
-            print(f"Network error importing Minecraft settings: {e}")
-            # Try to restore from backup if available
-            backup_path = Path(self.launcher.minecraft_dir) / "options.txt.backup"
-            if backup_path.exists():
-                try:
-                    with open(backup_path, 'rb') as src, open(options_path, 'wb') as dst:
-                        dst.write(src.read())
-                    print("Restored settings from backup")
-                except Exception as backup_error:
-                    print(f"Failed to restore backup settings: {backup_error}")
         except Exception as e:
             print(f"Failed to import Minecraft settings: {e}")
 
     def _import_assets(self):
-        """Import texture packs after game launch"""
-        # Wait a bit to ensure the game is fully loaded
         time.sleep(10)
-        
-        # Import assets
         success = self.assets.import_all_assets()
-        
         if success:
             print("Quarzism assets imported successfully")
         else:
@@ -186,7 +154,6 @@ class QuarzismClientGUI(QWidget):
             self.btn.setEnabled(False)
             self.progress_bar.setVisible(True)
             
-            # Install the version with progress updates
             def install_callback(status):
                 if "Progress" in status:
                     try:
@@ -208,10 +175,7 @@ class QuarzismClientGUI(QWidget):
         cmd = self.launcher.get_launch_command(version, username, ram, [])
         import subprocess
         self.process = subprocess.Popen(cmd)
-
-        # Start asset import after game launch
         threading.Thread(target=self._import_assets, daemon=True).start()
-
         threading.Thread(target=self._monitor, daemon=True).start()
 
     def _monitor(self):
@@ -236,7 +200,6 @@ class QuarzismClientGUI(QWidget):
         self.btn.setText("LAUNCH")
         self.btn.setEnabled(True)
         self.process = None
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
