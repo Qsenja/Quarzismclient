@@ -1,5 +1,5 @@
-        ("qlassets.py", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/qlassets.py"),
-        ("gui.py", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/gui.py"),
-        ("launcher.py", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/launcher.py"),
-        ("icon.png", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/icon.png"),
-        ("version.txt", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/version.txt")
+("qlassets.py", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/qlassets.py"),
+("gui.py", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/gui.py"),
+("launcher.py", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/launcher.py"),
+("icon.png", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/icon.png"),
+("version.txt", "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/version.txt")
