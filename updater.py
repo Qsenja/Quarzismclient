@@ -52,7 +52,7 @@ def get_file_list():
 def main():
     # Get paths
     base_dir = Path(__file__).parent
-    scripts_dir = base_dir / "scripts"
+    scripts_dir = base_dir
     
     # Get current version
     try:
@@ -70,7 +70,6 @@ def main():
     
     # If versions match, launch GUI
     if current_version == latest_version:
-        os.chdir(scripts_dir)
         os.system(f"{sys.executable} gui.py")
         return
     
@@ -92,10 +91,12 @@ def main():
             shutil.copy2(file_path, backup_path)
     
     # Download new files
+    success_count = 0
     for filename, url in files_to_update:
         destination = scripts_dir / filename
         if download_file(url, destination):
             print(f"Downloaded {filename}")
+            success_count += 1
         else:
             # Restore from backup if download failed
             backup_path = backup_dir / filename
@@ -117,8 +118,11 @@ def main():
         pass
     
     # Launch GUI with new version
-    os.chdir(scripts_dir)
-    os.system(f"{sys.executable} gui.py")
+    if success_count > 0:
+        os.system(f"{sys.executable} gui.py")
+    else:
+        print("Update failed. Launching existing version.")
+        os.system(f"{sys.executable} gui.py")
 
 if __name__ == "__main__":
     main()
