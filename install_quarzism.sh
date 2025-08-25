@@ -71,8 +71,8 @@ download_scripts() {
 }
 
 create_desktop_entry() {
-    local icon_path="$PWD/$SCRIPTS_DIR/icon.png"
-    local exec_path="$PWD/$VENV_DIR/bin/python $PWD/$SCRIPTS_DIR/gui.py"
+    local icon_path="$(pwd)/$SCRIPTS_DIR/icon.png"
+    local exec_path="$(pwd)/$VENV_DIR/bin/python $(pwd)/$SCRIPTS_DIR/gui.py"
     
     mkdir -p "$HOME/.local/share/applications"
     
@@ -81,8 +81,8 @@ create_desktop_entry() {
 Version=1.0
 Type=Application
 Name=Quarzism Client
-Comment=Minecraft client with Quarzism modifications
-Exec=$exec_path
+Comment=Minecraft Client for a Lightweight Experience
+Exec=sh -c "cd '$(pwd)' && $exec_path"
 Icon=$icon_path
 Categories=Game;
 Terminal=false
@@ -92,42 +92,12 @@ EOF
     if command -v update-desktop-database &> /dev/null; then
         update-desktop-database "$HOME/.local/share/applications"
     fi
+    
+    chmod +x "$DESKTOP_FILE"
 }
 
-create_uninstaller() {
-    cat > "$UNINSTALLER" << 'EOF'
-#!/bin/bash
-set -e
-
-INSTALL_DIR="Quarzism Client"
-DESKTOP_FILE="$HOME/.local/share/applications/quarzism-client.desktop"
-
-if [ "$EUID" -eq 0 ]; then
-    echo "Please do not run this uninstaller as root."
-    exit 1
-fi
-
-read -p "Are you sure you want to uninstall Quarzism Client? (y/N): " confirm
-if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
-    echo "Uninstallation cancelled."
-    exit 0
-fi
-
-if [ -d "$INSTALL_DIR" ]; then
-    rm -rf "$INSTALL_DIR"
-fi
-
-if [ -f "$DESKTOP_FILE" ]; then
-    rm "$DESKTOP_FILE"
-    
-    if command -v update-desktop-database &> /dev/null; then
-        update-desktop-database "$HOME/.local/share/applications"
-    fi
-fi
-
-echo "Uninstallation completed successfully."
-EOF
-    
+download_uninstaller() {
+    download_file "https://github.com/Qsenja/Quarzismclient/raw/refs/heads/main/uninstaller.sh" "$UNINSTALLER"
     chmod +x "$UNINSTALLER"
 }
 
@@ -137,7 +107,7 @@ main() {
     setup_virtualenv
     download_scripts
     create_desktop_entry
-    create_uninstaller
+    download_uninstaller
     echo "Installation completed successfully!"
 }
 
